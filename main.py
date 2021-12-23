@@ -40,18 +40,16 @@ def pause():
 
 
 def get_token():
-    # subprocess.Popen("C:\\Users\\zachk\\AppData\\Roaming\\Spotify\\Spotify.exe")
     auth_scope = "user-modify-playback-state user-read-currently-playing"
-    user = ""
-    client_id = ""
-    secret = ""
+    # user = "uewhvcdjd4hlwtfxpsl1svyt0"
+    client_id = "eb0ab2ef0ecc453ea6674b6fae96f63c"
+    secret = "e3e1e59769024041b8467f4f77319303"
     url = "http://localhost:8080"
     auth = spotipy.SpotifyOAuth(
         client_id=client_id,
         client_secret=secret,
         scope=auth_scope,
-        redirect_uri=url,
-        username=user
+        redirect_uri=url
     )
     return auth
 
@@ -85,10 +83,6 @@ def validate_time(input_time):
         return False
 
     return True
-
-
-def raise_frame(frame):
-    frame.tkraise()
 
 
 if __name__ == '__main__':
