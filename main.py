@@ -47,9 +47,9 @@ def pause():
 
 def get_token():
     auth_scope = "user-modify-playback-state user-read-currently-playing"
-    # user = "uewhvcdjd4hlwtfxpsl1svyt0"
-    client_id = "eb0ab2ef0ecc453ea6674b6fae96f63c"
-    secret = "e3e1e59769024041b8467f4f77319303"
+    # user = "you user id"
+    client_id = "your client id"
+    secret = "your secret"
     url = "http://localhost:8080"
     auth = spotipy.SpotifyOAuth(
         client_id=client_id,
