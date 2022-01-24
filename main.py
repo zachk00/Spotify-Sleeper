@@ -1,12 +1,15 @@
-import time as t
-
+import threading
 import requests
 import spotipy
 from spotipy import Spotify, SpotifyOAuth
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
-import subprocess
+from settings import Settings
+from PIL import ImageTk, Image
+
+root = Tk()
+user_settings = Settings()
 
 
 def playing():
@@ -19,9 +22,13 @@ def playing():
         return False
 
 
-def timer(sleep):
-    # t.sleep(60 * sleep)
+def timer_manager(sleep):
+    # timer_check is obsolete, transition if playing to here
+    stop = threading.Timer(sleep * 60, timer_check)
+    stop.start()
 
+
+def timer_check():
     if not playing():
         messagebox.showerror('Error: No Track Playing', 'Unable to detect any active track '
                                                         '\n(Spotify may not be open)')
@@ -30,13 +37,12 @@ def timer(sleep):
 
 
 def pause():
-    # print("timer finished, attempting pause")
     try:
         spotify.pause_playback(device_id=None)
-        return True
+        if user_settings.settings['close']:
+            user_settings.close_spotify()
     except spotipy.exceptions.SpotifyException:
         messagebox.showerror('Error: Unknown', '(May be caused by no device being open or no music being played)')
-        return False
 
 
 def get_token():
@@ -54,13 +60,9 @@ def get_token():
     return auth
 
 
-def open_spotify(path):
-    subprocess.Popen(path)
-
-
 def custom_time(time):
     if validate_time(time):
-        timer(int(time))
+        timer_manager(int(time))
 
 
 def validate_time(input_time):
@@ -86,11 +88,19 @@ def validate_time(input_time):
 
 
 if __name__ == '__main__':
+
+    if user_settings.settings['open']:
+        user_settings.open_spotify()
     spotify = spotipy.Spotify(auth_manager=get_token())
 
-    root = Tk()
+    root_width = 850
+    root_height = 300
+
+    height_offset = int(root.winfo_screenheight() / 2) - int(root_height / 2)
+    width_offset = int(root.winfo_screenwidth() / 2) - int(root_width / 2)
+
     root.title("Spotify Sleep Timer")
-    root.geometry("850x300")
+    root.geometry("{}x{}+{}+{}".format(root_width, root_height, width_offset, height_offset))
 
     defaultTimes = Label(root, text="Select a default time", font=("Arial", 18))
     customTimes = Label(root, text="Select a custom time ", font=("Arial", 18))
@@ -98,9 +108,9 @@ if __name__ == '__main__':
     defaultTimes.place(x=30, y=40)
     customTimes.place(x=30, y=100)
 
-    defaultFifteen = Button(root, text="15 Minutes", font=("Arial", 16), command=lambda: timer(15))
-    defaultTen = Button(root, text="10 Minutes", font=("Arial", 16), command=lambda: timer(10))
-    defaultFive = Button(root, text="5 Minutes", font=("Arial", 16), command=lambda: timer(5))
+    defaultFifteen = Button(root, text="15 Minutes", font=("Arial", 16), command=lambda: timer_manager(15))
+    defaultTen = Button(root, text="10 Minutes", font=("Arial", 16), command=lambda: timer_manager(10))
+    defaultFive = Button(root, text="5 Minutes", font=("Arial", 16), command=lambda: timer_manager(5))
 
     defaultFive.place(x=300, y=40)
     defaultTen.place(x=450, y=40)
@@ -111,5 +121,11 @@ if __name__ == '__main__':
 
     customTime.place(x=300, y=100)
     customSubmit.place(x=450, y=100)
+
+    settings_icon = ImageTk.PhotoImage(Image.open("icons/settings.png").resize((25, 25)))
+    settings_btn = Button(root, image=settings_icon,
+                          command=lambda: user_settings.open_settings(root, user_settings.get_status()))
+
+    settings_btn.place(x=800, y=20)
 
     root.mainloop()
